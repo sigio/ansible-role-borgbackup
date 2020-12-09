@@ -85,7 +85,7 @@
   environment:
     BORG_REPO: "u{{sb_main}}-sub{{backup_hetzner_subaccount}}@u{{sb_main}}-sub{{backup_hetzner_subaccount}}.your-storagebox.de:./borg/"
     BORG_RSH: "ssh -4 -p 23 -i /root/.ssh/id_ed25519 -o HashKnownHosts=false"
-    BORG_PASSPHRASE: "{{backupninja_encryption_password}}"
+    BORG_PASSPHRASE: "{{borg_passphrase}}"
     TEMP: /var/tmp
   register: command_result
   changed_when: "'repository already exists' not in command_result.stderr"

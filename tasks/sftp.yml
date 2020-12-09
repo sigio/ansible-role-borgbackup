@@ -27,7 +27,7 @@
     key: "{{borg_ssh_pubkey_data.content|b64decode}}"
     key_options: 'command="borg serve --restrict-to-path {{borg_repodir}}",restrict'
   delegate_to: "{{backup_domain}}"
-  become: "{{ False if ldapclient_enabled == False  else True }}"
+  become: "{{borg_use_become_on_backuphost}}"
 #  throttle: 1      # Only works in ansible latest (2.9 and later)
   tags:
     - borgkey
@@ -36,7 +36,7 @@
   command: "borg init --encryption=repokey '{{backup_name}}@{{backup_domain}}:{{inventory_hostname}}.borg'"
   environment:
     BORG_REPO: "{{backup_name}}@{{backup_domain}}:{{inventory_hostname}}.borg"
-    BORG_PASSPHRASE: "{{backupninja_encryption_password}}"
+    BORG_PASSPHRASE: "{{borg_passphrase}}"
     TEMP: /var/tmp
   args:
     creates: /root/.config/borg/security
