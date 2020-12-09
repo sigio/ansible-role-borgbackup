@@ -9,6 +9,7 @@ borg_command: "/usr/local/bin/borg"
 borg_keep_daily: 7
 borg_keep_weekly: 4
 borg_keep_monthly: 6
+borg_ssh_pubkey: "/root/.ssh/id_ed25519.pub"
 
 # Please keep sorted
 borg_global_excludes:

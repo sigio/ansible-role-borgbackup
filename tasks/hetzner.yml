@@ -14,11 +14,10 @@
   tags:
     - borgconfig
 
-# Hetzner's storagebox restricted ssh only supports rsa2 keys, no ed25519, in SSH2-format
 - name: Read ssh public-key
-  #  shell: "ssh-keygen -e -f /root/.ssh/id_rsa.pub"
-  shell: "cat /root/.ssh/id_ed25519.pub"
-  register: borg_pubkey
+  slurp:
+    src: "{{borg_ssh_pubkey}}"
+  register: borg_ssh_pubkey_data
   check_mode: false
   tags:
     - borgkey
@@ -55,7 +54,7 @@
   copy:
     dest: "/tmp/{{sb_main}}/{{backup_hetzner_subaccount}}/.ssh/authorized_keys"
     mode: "0600"
-    content: "{{borg_pubkey.stdout}}\n"
+    content: "{{borg_ssh_pubkey_data.content|b64decode}}\n"
   throttle: 1      # Only works in ansible latest (2.9 and later)
   connection: local
   become: no

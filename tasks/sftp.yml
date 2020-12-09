@@ -16,15 +16,15 @@
 
 - name: Read ssh public-key
   slurp:
-    src: /root/.ssh/id_rsa.pub
-  register: id_rsa_pub_root
+    src: "{{borg_ssh_pubkey}}"
+  register: borg_ssh_pubkey_data
   tags:
     - borgkey
 
 - name: Add id_rsa key with limits to authorized_keys on backup-host
   authorized_key:
     user: "{{backup_name}}"
-    key: "{{id_rsa_pub_root.content|b64decode}}"
+    key: "{{borg_ssh_pubkey_data.content|b64decode}}"
     key_options: 'command="borg serve --restrict-to-path {{borg_repodir}}",restrict'
   delegate_to: "{{backup_domain}}"
   become: "{{ False if ldapclient_enabled == False  else True }}"
