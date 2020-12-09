@@ -1,0 +1,130 @@
+#!/bin/bash
+# {{ansible_managed}}
+
+source /root/scripts/monitor.rc     # Read NSCA-settings
+source /etc/borg.env                # Borg repo and key passphrase
+export TIMESTAMP=`date +%Y%m%d-%H%M`
+export TEMP=/var/tmp
+export IONICE="{{borg_ionice}}"
+export BORG="{{borg_command}}"
+
+backup_exit=0
+prune_exit=0
+check_exit=0
+
+# some helpers and error handling:
+info() { printf "\n%s %s\n\n" "$( date )" "$*" >&2; }
+nsca() {
+    CHECK=$1
+    shift;
+    RETVAL=$1
+    shift
+    MSG=$*
+
+	echo "$HOSTNAME	borg_$CHECK	$RETVAL	$MSG" | ${NSCA} -H ${NSCASERVER} -p ${NSCAPORT} -c ${NSCACONF}
+
+}
+
+trap 'echo $( date ) Backup interrupted >&2; exit 2' INT TERM
+
+borginit() {
+    ${BORG} init --encryption=repokey
+}
+
+borgcreate() {
+    nsca backup -1 "Starting backup: $(date)"
+
+    # Backup the most important directories into an archive named after
+    # the machine this script is currently running on:
+
+${IONICE} ${BORG} create \
+--verbose \
+--filter AME \
+--list \
+--stats \
+--show-rc \
+--compression auto,zstd \
+--checkpoint-interval 300 \
+--exclude-caches \
+--exclude-if-present .nobackup \
+--exclude /proc --exclude /sys --exclude /run --exclude /dev --exclude /media \
+--exclude-from /etc/borg.excludes \
+::${TIMESTAMP} /
+
+    backup_exit=$?
+    nsca backup $backup_exit "Completed: $(date)"
+}
+
+borgprune() {
+    info "Pruning repository"
+
+# Use the `prune` subcommand to maintain 7 daily, 4 weekly and 6 monthly
+# archives of THIS machine. The '{hostname}-' prefix is very important to
+# limit prune's operation to this machine's archives and not apply to
+# other machines' archives also:
+
+${IONICE} ${BORG} prune \
+--list \
+--keep-daily    {{borg_keep_daily}} \
+--keep-weekly   {{borg_keep_weekly}} \
+--keep-monthly  {{borg_keep_monthly}} \
+--show-rc
+
+prune_exit=$?
+nsca prune $prune_exit "Completed: $(date)"
+}
+
+borgcheck() {
+    info "Checking repository"
+
+    ${IONICE} ${BORG} check \
+--info \
+--progress \
+--show-rc \
+--last 3
+
+    check_exit=$?
+    nsca check $check_exit "Completed: $(date)"
+}
+
+borgall() {
+    borgcreate
+    borgprune
+    borgcheck
+}
+
+for command in ${BASH_ARGV[*]} ; do
+case "${command}" in
+create)
+    borgcreate
+    ;;
+prune)
+    borgprune
+    ;;
+check)
+    borgcheck
+    ;;
+init)
+    borginit
+    ;;
+all)
+    borgall
+    ;;
+/etc/backup.d/90-borg.sh)
+    borgall
+    ;;
+*)
+    echo "Unknown command, please use all|init|create|prune|check"
+esac
+done
+
+if [ $# -eq 0 ]
+then
+    borgall
+fi
+
+# use highest exit code as global exit code
+# global_exit=$(( backup_exit > prune_exit ? backup_exit : prune_exit ))
+global_exit=$(( $backup_exit + $prune_exit + $check_exit ))
+
+exit ${global_exit}

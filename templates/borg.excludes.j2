@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+# Excludes
+{% for path in borg_global_excludes %}
+{{path}}
+{% endfor %}
+{% for path in borg_excludes %}
+{{path}}
+{% endfor %}

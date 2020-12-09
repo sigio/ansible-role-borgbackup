@@ -1,0 +1,45 @@
+---
+
+borg_version: "1.1.10"
+borg_redownload: "false"
+borg_install_binary: true
+borg_repodir: "{{inventory_hostname}}.borg"
+
+# Please keep sorted
+borg_global_excludes:
+    - "sh:**/lost+found"
+    - "sh:/home/*/.ansible/tmp"
+    - "sh:/home/*/.cache"
+    - "sh:/home/*/.gnupg"
+    - "sh:/home/*/.local/share/Trash"
+    - "sh:/home/*/.thumbnails"
+    - "sh:/home/*/.Trash"
+    - "pp:/mnt"
+    - "pp:/root/.ansible/tmp"
+    - "pp:/root/.cache"
+    - "sh:/swap*"
+    - "pp:/tmp"
+    - "sh:/usr/src/linux-headers*"
+    - "sh:/usr/src/linux-source*"
+    - "pp:/var/cache"
+    - "pp:/var/lib/apt"
+    - "pp:/var/lib/docker"
+    - "pp:/var/lib/elasticsearch/nodes"
+    - "pp:/var/lib/kubelet/pods"
+    - "pp:/var/lib/lxcfs"
+    - "pp:/var/lib/mlocate"
+    - "pp:/var/lib/mongodb"
+    - "pp:/var/lib/mysql"
+    - "pp:/var/lib/postgresql"
+    - "pp:/var/lib/prometheus/metrics"
+    - "sh:/var/log/*.gz"
+    - "pp:/var/log/lastlog"
+    - "pp:/var/tmp"
+
+# Overrule these on your specific hosts or groups
+borg_includes: []
+borg_excludes: []
+
+borg_backupninja: false
+
+backup_destination: "sftp"

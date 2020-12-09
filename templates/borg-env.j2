@@ -1,0 +1,8 @@
+# {{ansible_managed}}
+{% if 'pcextreme' in backup_destination %}
+export BORG_REPO='{{backup_name}}@{{backup_domain}}:{{borg_repodir}}'
+{% elif 'hetzner' in backup_destination %}
+export BORG_RSH='ssh -4 -p 23 -i /root/.ssh/id_ed25519 -o HashKnownHosts=false'
+export BORG_REPO='u{{sb_main}}-sub{{backup_hetzner_subaccount}}@u{{sb_main}}-sub{{backup_hetzner_subaccount}}.your-storagebox.de:./borg/'
+{% endif %}
+export BORG_PASSPHRASE='{{borg_passphrase}}'

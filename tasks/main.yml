@@ -1,0 +1,36 @@
+---
+
+- name: Install borg binary
+  get_url:
+    url: "https://github.com/borgbackup/borg/releases/download/{{borg_version}}/borg-linux64"
+    dest: /usr/local/bin/borg
+    owner: root
+    group: root
+    mode: 0755
+    force: "{{borg_redownload}}"
+  when:
+    - borg_install_binary|bool
+    - enable_backups|bool
+
+- include_tasks: "sftp.yml"
+  when:
+    - "'sftp' in backup_destination"
+    - enable_backups|bool
+  tags:
+    - borg_sftp
+
+- include_tasks: "hetzner.yml"
+  when:
+    - "'hetzner' in backup_destination"
+    - enable_backups|bool
+  tags:
+    - hetzner
+
+- name: Add backupninja job to call borg
+  file:
+    state: link
+    src: /usr/local/bin/borg.sh
+    dest: /etc/backup.d/90-borg.sh
+  when:
+    - borg_backupninja|bool
+    - enable_backups|bool
