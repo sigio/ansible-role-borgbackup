@@ -5,6 +5,7 @@ borg_redownload: "false"
 borg_install_binary: true
 borg_repodir: "{{inventory_hostname}}.borg"
 borg_ionice: "ionice -c 3"
+borg_command: "/usr/local/bin/borg"
 
 # Please keep sorted
 borg_global_excludes:
