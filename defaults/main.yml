@@ -6,6 +6,7 @@ borg_install_binary: true
 borg_repodir: "{{inventory_hostname}}.borg"
 borg_ionice: "ionice -c 3"
 borg_command: "/usr/local/bin/borg"
+borg_keep_hourly: 4
 borg_keep_daily: 7
 borg_keep_weekly: 4
 borg_keep_monthly: 6
@@ -48,5 +49,6 @@ borg_includes: []
 borg_excludes: []
 
 borg_backupninja: false
+borg_systemd_timer: true
 
 backup_destination: "sftp"

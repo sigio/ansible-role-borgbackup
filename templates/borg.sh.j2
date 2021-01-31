@@ -65,6 +65,7 @@ borgprune() {
 
 ${IONICE} ${BORG} prune \
 --list \
+--keep-hourly   {{borg_keep_hourly}} \
 --keep-daily    {{borg_keep_daily}} \
 --keep-weekly   {{borg_keep_weekly}} \
 --keep-monthly  {{borg_keep_monthly}} \

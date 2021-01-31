@@ -1,0 +1,12 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Borg Backup Timer
+
+[Timer]
+WakeSystem=false
+OnUnitActiveSec=4h
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target
