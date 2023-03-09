@@ -55,3 +55,11 @@
   when:
     - borg_backupninja | bool
     - enable_backups | bool
+
+- name: Enable systemd timer for borg
+  systemd:
+    name: borg.timer
+    enabled: true
+  when:
+    - enable_backups | bool
+    - not borg_backupninja | bool
