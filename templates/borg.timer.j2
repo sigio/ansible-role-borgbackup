@@ -6,7 +6,8 @@ Description=Borg Backup Timer
 [Timer]
 WakeSystem=false
 OnUnitActiveSec=4h
-RandomizedDelaySec=10min
+RandomizedDelaySec=2h
+Unit=borg.service
 
 [Install]
 WantedBy=timers.target

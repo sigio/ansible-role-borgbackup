@@ -2,15 +2,36 @@
 
 - name: Install borg binary
   get_url:
-    url: "https://github.com/borgbackup/borg/releases/download/{{borg_version}}/borg-linux64"
+    url: "https://github.com/borgbackup/borg/releases/download/{{ borg_version }}/borg-linux64"
     dest: /usr/local/bin/borg
     owner: root
     group: root
     mode: 0755
-    force: "{{borg_redownload}}"
+    force: "{{ borg_redownload }}"
   when:
     - borg_install_binary|bool
     - enable_backups|bool
+
+- name: Install borg package (debian/ubuntu)
+  apt:
+    package: borgbackup
+    state: installed
+  when:
+    - not borg_install_binary|bool
+    - ansible_os_family == "Debian"
+
+- name: Template borg systemd files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0600') }}"
+  with_items:
+    - { src: "borg.service.j2", dest: "/etc/systemd/system/borg.service", mode: "0644" }
+    - { src: "borg.timer.j2", dest: "/etc/systemd/system/borg.timer", mode: "0644" }
+  tags:
+    - borgsystemd
 
 - include_tasks: "sftp.yml"
   when:

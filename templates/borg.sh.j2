@@ -1,12 +1,12 @@
 #!/bin/bash
-# {{ansible_managed}}
+# {{ ansible_managed }}
 
 source /root/scripts/monitor.rc     # Read NSCA-settings
 source /etc/borg.env                # Borg repo and key passphrase
 export TIMESTAMP=`date +%Y%m%d-%H%M`
 export TEMP=/var/tmp
-export IONICE="{{borg_ionice}}"
-export BORG="{{borg_command}}"
+export IONICE="{{ borg_ionice }}"
+export BORG="{{ borg_command }}"
 
 backup_exit=0
 prune_exit=0
@@ -65,10 +65,10 @@ borgprune() {
 
 ${IONICE} ${BORG} prune \
 --list \
---keep-hourly   {{borg_keep_hourly}} \
---keep-daily    {{borg_keep_daily}} \
---keep-weekly   {{borg_keep_weekly}} \
---keep-monthly  {{borg_keep_monthly}} \
+--keep-hourly   {{ borg_keep_hourly }} \
+--keep-daily    {{ borg_keep_daily }} \
+--keep-weekly   {{ borg_keep_weekly }} \
+--keep-monthly  {{ borg_keep_monthly }} \
 --show-rc
 
 prune_exit=$?
