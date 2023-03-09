@@ -5,7 +5,7 @@ borg_redownload: "false"
 borg_install_binary: true
 borg_repodir: "{{ inventory_hostname }}.borg"
 borg_ionice: "ionice -c 3"
-borg_command: "/usr/local/bin/borg"
+borg_command: "/usr/bin/borg"
 borg_keep_hourly: 4
 borg_keep_daily: 7
 borg_keep_weekly: 4

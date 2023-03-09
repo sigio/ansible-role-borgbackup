@@ -1,12 +1,12 @@
 ---
 
 - name: Template files
-  template:
-    src: "{{item.src}}"
-    dest: "{{item.dest}}"
-    owner: "{{item.owner|default('root')}}"
-    group: "{{item.group|default('root')}}"
-    mode: "{{item.mode|default('0600')}}"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0600') }}"
   with_items:
     - { src: "borg.excludes.j2", dest: "/etc/borg.excludes" }
     - { src: "borg.sh.j2", dest: "/usr/local/bin/borg.sh", mode: "0700" }
@@ -15,28 +15,28 @@
     - borgconfig
 
 - name: Read ssh public-key
-  slurp:
-    src: "{{borg_ssh_pubkey}}"
+  ansible.builtin.slurp:
+    src: "{{ borg_ssh_pubkey }}"
   register: borg_ssh_pubkey_data
   tags:
     - borgkey
 
 - name: Add id_rsa key with limits to authorized_keys on backup-host
-  authorized_key:
-    user: "{{backup_name}}"
-    key: "{{borg_ssh_pubkey_data.content|b64decode}}"
-    key_options: 'command="borg serve --restrict-to-path {{borg_repodir}}",restrict'
-  delegate_to: "{{backup_domain}}"
-  become: "{{borg_use_become_on_backuphost}}"
+  ansible.posix.authorized_key:
+    user: "{{ backup_name }}"
+    key: "{{ borg_ssh_pubkey_data.content | b64decode }}"
+    key_options: 'command="borg serve --restrict-to-path {{ borg_repodir }}",restrict'
+  delegate_to: "{{ backup_domain }}"
+  become: "{{ borg_use_become_on_backuphost }}"
 #  throttle: 1      # Only works in ansible latest (2.9 and later)
   tags:
     - borgkey
 
 - name: Initialize repository
-  command: "borg init --encryption=repokey '{{backup_name}}@{{backup_domain}}:{{inventory_hostname}}.borg'"
+  ansible.builtin.command: "borg init --encryption=repokey '{{ backup_name }}@{{ backup_domain }}:{{ inventory_hostname }}.borg'"
   environment:
-    BORG_REPO: "{{backup_name}}@{{backup_domain}}:{{inventory_hostname}}.borg"
-    BORG_PASSPHRASE: "{{borg_passphrase}}"
+    BORG_REPO: "{{ backup_name }}@{{ backup_domain }}:{{ inventory_hostname }}.borg"
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
     TEMP: /var/tmp
   args:
     creates: /root/.config/borg/security

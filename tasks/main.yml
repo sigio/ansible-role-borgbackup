@@ -1,27 +1,27 @@
 ---
 
 - name: Install borg binary
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/borgbackup/borg/releases/download/{{ borg_version }}/borg-linux64"
-    dest: /usr/local/bin/borg
+    dest: "{{ borg_command }}"
     owner: root
     group: root
     mode: 0755
     force: "{{ borg_redownload }}"
   when:
-    - borg_install_binary|bool
-    - enable_backups|bool
+    - borg_install_binary | bool
+    - enable_backups | bool
 
 - name: Install borg package (debian/ubuntu)
-  apt:
+  ansible.builtin.apt:
     package: borgbackup
-    state: installed
+    state: present
   when:
-    - not borg_install_binary|bool
+    - not borg_install_binary | bool
     - ansible_os_family == "Debian"
 
 - name: Template borg systemd files
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ item.owner | default('root') }}"
@@ -33,25 +33,25 @@
   tags:
     - borgsystemd
 
-- include_tasks: "sftp.yml"
+- ansible.builtin.include_tasks: "sftp.yml"
   when:
     - "'sftp' in backup_destination"
-    - enable_backups|bool
+    - enable_backups | bool
   tags:
     - borg_sftp
 
-- include_tasks: "hetzner.yml"
+- ansible.builtin.include_tasks: "hetzner.yml"
   when:
     - "'hetzner' in backup_destination"
-    - enable_backups|bool
+    - enable_backups | bool
   tags:
     - hetzner
 
 - name: Add backupninja job to call borg
-  file:
+  ansible.builtin.file:
     state: link
     src: /usr/local/bin/borg.sh
     dest: /etc/backup.d/90-borg.sh
   when:
-    - borg_backupninja|bool
-    - enable_backups|bool
+    - borg_backupninja | bool
+    - enable_backups | bool

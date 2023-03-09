@@ -1,8 +1,11 @@
 #!/bin/bash
 # {{ ansible_managed }}
 
+if [ -r /root/scripts/monitor.rc ]; then
 source /root/scripts/monitor.rc     # Read NSCA-settings
+fi
 source /etc/borg.env                # Borg repo and key passphrase
+
 export TIMESTAMP=`date +%Y%m%d-%H%M`
 export TEMP=/var/tmp
 export IONICE="{{ borg_ionice }}"

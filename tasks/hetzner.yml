@@ -1,12 +1,12 @@
 ---
 
 - name: Template files
-  template:
-    src: "{{item.src}}"
-    dest: "{{item.dest}}"
-    owner: "{{item.owner|default('root')}}"
-    group: "{{item.group|default('root')}}"
-    mode: "{{item.mode|default('0600')}}"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0600') }}"
   with_items:
     - { src: "borg.excludes.j2", dest: "/etc/borg.excludes" }
     - { src: "borg.sh.j2", dest: "/usr/local/bin/borg.sh", mode: "0700" }
@@ -15,46 +15,46 @@
     - borgconfig
 
 - name: Read ssh public-key
-  slurp:
-    src: "{{borg_ssh_pubkey}}"
+  ansible.builtin.slurp:
+    src: "{{ borg_ssh_pubkey }}"
   register: borg_ssh_pubkey_data
   check_mode: false
   tags:
     - borgkey
 
 - name: Create temporary mountpoint for backup-space
-  file:
+  ansible.builtin.file:
     state: directory
-    path: "/tmp/{{sb_main}}"
+    path: "/tmp/{{ sb_main }}"
   become: no
   connection: local
 
 - name: Mount backup-space
-  shell: "sshfs u{{sb_main}}@u{{sb_main}}.your-storagebox.de: /tmp/{{sb_main}}"
+  ansible.builtin.shell: "sshfs u{{ sb_main }}@u{{ sb_main }}.your-storagebox.de: /tmp/{{ sb_main }}"
   args:
-    creates: /tmp/{{sb_main}}/.ssh/authorized_keys
+    creates: /tmp/{{ sb_main }}/.ssh/authorized_keys
   become: no
   connection: local
 
 - name: Create (ch)root directory for backup
-  file:
+  ansible.builtin.file:
     state: directory
-    name: "/tmp/{{sb_main}}/{{item.name}}"
-    mode: "{{item.mode|default('0700')}}"
+    name: "/tmp/{{ sb_main }}/{{ item.name }}"
+    mode: "{{ item.mode | default('0700') }}"
   with_items:
-    -  { name: "{{backup_hetzner_subaccount}}" }
-    -  { name: "{{backup_hetzner_subaccount}}/.ssh" }
-    -  { name: "{{backup_hetzner_subaccount}}/borg" }
+    -  { name: "{{ backup_hetzner_subaccount }}" }
+    -  { name: "{{ backup_hetzner_subaccount }}/.ssh" }
+    -  { name: "{{ backup_hetzner_subaccount }}/borg" }
   connection: local
   become: no
   tags:
     - borgkey
 
 - name: Add pubkey to authorized_keys on backup-host
-  copy:
-    dest: "/tmp/{{sb_main}}/{{backup_hetzner_subaccount}}/.ssh/authorized_keys"
+  ansible.builtin.copy:
+    dest: "/tmp/{{ sb_main }}/{{ backup_hetzner_subaccount }}/.ssh/authorized_keys"
     mode: "0600"
-    content: "{{borg_ssh_pubkey_data.content|b64decode}}\n"
+    content: "{{ borg_ssh_pubkey_data.content | b64decode }}\n"
   throttle: 1      # Only works in ansible latest (2.9 and later)
   connection: local
   become: no
@@ -62,30 +62,30 @@
     - borgkey
 
 - name: Add known_hosts entries
-  known_hosts:
+  ansible.builtin.known_hosts:
     path: /root/.ssh/known_hosts
-    name: "{{item.name}}"
-    key: "{{item.name}} {{item.key}}"
+    name: "{{ item.name }}"
+    key: "{{ item.name }} {{ item.key }}"
     hash_host: "false"
   with_items:
-    - { name: "u{{sb_main}}-sub{{backup_hetzner_subaccount}}.your-storagebox.de", key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA5EB5p/5Hp3hGW1oHok+PIOH9Pbn7cnUiGmUEBrCVjnAw+HrKyN8bYVV0dIGllswYXwkG/+bgiBlE6IVIBAq+JwVWu1Sss3KarHY3OvFJUXZoZyRRg/Gc/+LRCE7lyKpwWQ70dbelGRyyJFH36eNv6ySXoUYtGkwlU5IVaHPApOxe4LHPZa/qhSRbPo2hwoh0orCtgejRebNtW5nlx00DNFgsvn8Svz2cIYLxsPVzKgUxs8Zxsxgn+Q/UvR7uq4AbAhyBMLxv7DjJ1pc7PJocuTno2Rw9uMZi1gkjbnmiOh6TTXIEWbnroyIhwc8555uto9melEUmWNQ+C+PwAK+MPw==" }
-    - { name: "u{{sb_main}}-sub{{backup_hetzner_subaccount}}.your-storagebox.de", key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIICf9svRenC/PLKIL9nk6K/pxQgoiFC41wTNvoIncOxs" }
+    - { name: "u{{ sb_main }}-sub{{ backup_hetzner_subaccount }}.your-storagebox.de", key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA5EB5p/5Hp3hGW1oHok+PIOH9Pbn7cnUiGmUEBrCVjnAw+HrKyN8bYVV0dIGllswYXwkG/+bgiBlE6IVIBAq+JwVWu1Sss3KarHY3OvFJUXZoZyRRg/Gc/+LRCE7lyKpwWQ70dbelGRyyJFH36eNv6ySXoUYtGkwlU5IVaHPApOxe4LHPZa/qhSRbPo2hwoh0orCtgejRebNtW5nlx00DNFgsvn8Svz2cIYLxsPVzKgUxs8Zxsxgn+Q/UvR7uq4AbAhyBMLxv7DjJ1pc7PJocuTno2Rw9uMZi1gkjbnmiOh6TTXIEWbnroyIhwc8555uto9melEUmWNQ+C+PwAK+MPw==" }
+    - { name: "u{{ sb_main }}-sub{{ backup_hetzner_subaccount }}.your-storagebox.de", key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIICf9svRenC/PLKIL9nk6K/pxQgoiFC41wTNvoIncOxs" }
   tags:
     - known_hosts
 
 - name: Unmount backup-space
-  shell: "fusermount -u /tmp/{{sb_main}}"
+  ansible.builtin.shell: "fusermount -u /tmp/{{ sb_main }}"
   args:
-    removes: /tmp/{{sb_main}}/.ssh/authorized_keys
+    removes: /tmp/{{ sb_main }}/.ssh/authorized_keys
   become: no
   connection: local
 
 - name: Initialize repository
-  shell: "borg init --encryption=repokey"
+  ansible.builtin.shell: "borg init --encryption=repokey"
   environment:
-    BORG_REPO: "u{{sb_main}}-sub{{backup_hetzner_subaccount}}@u{{sb_main}}-sub{{backup_hetzner_subaccount}}.your-storagebox.de:./borg/"
+    BORG_REPO: "u{{ sb_main }}-sub{{ backup_hetzner_subaccount }}@u{{ sb_main }}-sub{{ backup_hetzner_subaccount }}.your-storagebox.de:./borg/"
     BORG_RSH: "ssh -4 -p 23 -i /root/.ssh/id_ed25519 -o HashKnownHosts=false"
-    BORG_PASSPHRASE: "{{borg_passphrase}}"
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
     TEMP: /var/tmp
   register: command_result
   changed_when: "'repository already exists' not in command_result.stderr"
