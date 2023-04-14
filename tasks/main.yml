@@ -6,7 +6,7 @@
     dest: "{{ borg_command }}"
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
     force: "{{ borg_redownload }}"
   when:
     - borg_install_binary | bool
@@ -57,7 +57,7 @@
     - enable_backups | bool
 
 - name: Enable systemd timer for borg
-  systemd:
+  ansible.builtin.systemd:
     name: borg.timer
     enabled: true
   when:
