@@ -10,6 +10,7 @@
     force: "{{ borg_redownload }}"
   when:
     - borg_install_binary | bool
+    - ansible_architecture == 'x86_64"
     - enable_backups | bool
 
 - name: Install borg package (debian/ubuntu)

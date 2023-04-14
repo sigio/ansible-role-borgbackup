@@ -32,6 +32,20 @@
   tags:
     - borgkey
 
+- name: Add known_hosts entries
+  ansible.builtin.known_hosts:
+    path: /root/.ssh/known_hosts
+    name: "{{ item.name }}"
+    key: "{{ item.name }} {{ item.key }}"
+    hash_host: "false"
+  with_items:
+    - { name: "{{ backup_domain }}",
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAp2ThsCgXtTnrCYsc/STc90uZnL/S8/sXuzEFPFR652bEDujhGbNRZ6Qiaf9GlemFbooEWwxK+W92IUoD2pvuNIpkX1BH12CFYqzrzpX4V/bR+5phEGRwn6/DFh3rgy+v8WphrlPec227J59FmGgRU+zCa0+AKiaQMGx5WdIIfeB5xXu0uNnfsQgwR3Eebj8zdmCljIgbZkGlI79NDFslriFkvlXZ1A5YF8pENTlTe5qnY+vffdtfgN9CCUQYDEir/G27f04SN0nxfxdhnm9nUflAvDUrbgCsgQIDrmKCsXsBi4O6KMiRAJ5OzagvXa9n5nt3RhUhbC2hauxB6exKfCF4Nsh/zT3STebB3yaVN24Hauuivw+Y3ZCkhaHgGAXk0O0RDVZCpv8y1kkqb2W6vZDImI5wttP+aq92ezJIj+cM66EwpKymy2fhTgmEUxCpBkw2Bgm+HovLtrMSn8mZmqVQt6Y52niQl4DDfiCEalPkCyzh5qny3ie8gN5BQqs=" } # noqa yaml[line-length]
+    - { name: "{{ backup_domain }}",
+        key: "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBBZ6+fEfPLwgbZ23bHFHv1Rhkh4FZut4Xr8nuZBZn3TdU4X8gi/qzLrixjCGMdtpYVOrV1ByWOjQdNk6nfkIPE=" }
+    - { name: "{{ backup_domain }}",
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdPjWv47aEqg/QXjSPBUY3eCtas+yKJcSC4tkKUF2dh" }
+
 - name: Initialize repository
   ansible.builtin.command: "borg init --encryption=repokey '{{ backup_name }}@{{ backup_domain }}:{{ inventory_hostname }}.borg'"
   environment:
